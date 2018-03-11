@@ -1,47 +1,81 @@
 import socket
-from my_data_encoding import int_to_byte_array
+import threading
+from encoding_tool import read_int32
+from cStringIO import StringIO
 
-TCP_IP = '127.0.0.1'
-TCP_PORT = 7000
+class TCPConnection:
+    """The TCP/IP implementation connection"""
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((TCP_IP, TCP_PORT))
+    def __init__(self, address, port):
+        self.socket = None
+        self.agent = None
 
+    def connect(self, address, port):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(10) # 10 seconds to wait for connection
+        try:
+            self.socket.connect((address, port))
+        except socket.error, exception:
+            # return without creating tcp reading loop
+            print(exception)
+            return
+        finally:
+            self.socket.close()
 
-# send connection message
-# requestId
-urn = 'urn:rescuecore2:messages.control:ak_connect'
-request_id = 20
-version = 1
-agent_name = 'rescuecore2.components.AbstractComponent'
-requested_entities = ['urn:rescuecore2.standard:entity:firebrigade']
+        read_thread = threading.Thread(target=self.read_loop)
+        read_thread.start()
 
-my_data = ''
-my_data += int_to_byte_array(request_id)
-my_data += int_to_byte_array(version)
-my_data += int_to_byte_array(len(agent_name))
-my_data += agent_name.encode()
-my_data += int_to_byte_array(len(requested_entities))
-for req_entity in requested_entities:
-    my_data += int_to_byte_array(len(req_entity))
-    my_data += req_entity.encode()
+    def set_agent(self, _agent):
+        self.agent = _agent
 
-all_size = 4 + len(urn) + 4 + len(my_data) + 4
-all_data = int_to_byte_array(all_size) + int_to_byte_array(len(urn)) + urn.encode() + int_to_byte_array(len(my_data)) + my_data + int_to_byte_array(0)
-s.send(all_data)
+    def bytes_received(self, byte_array):
+        # convert byte_array to a message as defined by message.py
+        msg = None
+        self.agent.message_received(msg)
+        pass
 
-# receive data
+    def read_loop(self):
+        buffer_size = 4096
+        while True:
+            try:
+                # the first 4 byte is the length of message,
+                data_array = self.socket.recv(buffer_size)
+                if data_array:
+                    # if it is not empty string
+                    msg_size = read_int32(data_array[:4])
+                    if msg_size == 0:
+                        # marks the end of the message
+                        continue
+                    else:
+                        self.recv_by_size(data_array[4:], msg_size, buffer_size)
+                else:
+                    raise IOError('tcp client is disconnected')
+            except:
+                self.socket.close()
+                break
 
-buffsize = 4096
-received_data = s.recv(buffsize)
-print received_data
+    def recv_by_size(self, data_array, msg_size, buffer_size):
+        if msg_size <= buffer_size:
+            self.bytes_received(data_array)
+        else:
+            data_size_so_far = len(data_array)
+            while data_size_so_far < msg_size:
+                new_data_array = self.socket.recv(buffer_size)
+                if new_data_array:
+                    data_size_so_far += len(new_data_array)
+                    data_array += new_data_array
+                else:
+                    raise IOError('tcp client is disconnected')
+            if data_size_so_far == msg_size:
+                self.bytes_received(data_array)
+            else:
+                raise IOError('tcp client msg size error')
 
-# version
-# agentName
-# requestedEntities
-# urn
-# byte length
-# 0 to indicate the end of the message
+    def send_message(self, msg):
+        pass
 
-# todo: do something
-s.close()
+    def send_bytes(self, byte_array):
+        self.socket.send(byte_array)
+
+    def shutdown(self):
+        self.socket.close()
