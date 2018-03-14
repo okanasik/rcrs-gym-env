@@ -1,9 +1,9 @@
-import sys
 import argparse
 from rescue_agent import FireBrigade
 from rescue_agent import PoliceForce
 from rescue_agent import AmbulanceTeam
 from tcp_connection import TCPConnection
+
 
 class AgentLauncher:
     """The base class to launch agents using tcp/ip communication"""
@@ -38,7 +38,6 @@ class AgentLauncher:
         except IOError:
             pass
 
-
     def connect(self, agent):
         connection = TCPConnection()
         connection.connect(self.hostname, self.port)
@@ -49,15 +48,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('-p', '--port', action='store')
     parser.add_argument('-h', '--hostname', action='store')
-    parser.add_argument('-fb', '--firebrigade', action='store')
-    parser.add_argument('-pf', '--policeforce', action='store')
-    parser.add_argument('-at', '--ambulanceteam', action='store')
+    parser.add_argument('-fb', '--firebrigade', action='store', default=-1)
+    parser.add_argument('-pf', '--policeforce', action='store', default=-1)
+    parser.add_argument('-at', '--ambulanceteam', action='store', default=-1)
 
     args = parser.parse_args()
-    print(args.port)
-    print(args.hostname)
-    print(args.firebrigade)
-    print(args.policeforce)
-    print(args.ambulanceteam)
+    launcher = AgentLauncher(int(args.port), args.hostname, int(args.firebrigade), int(args.policeforce), int(args.ambulanceteam))
 
 

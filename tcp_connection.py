@@ -1,26 +1,32 @@
 import socket
 import threading
-from encoding_tool import read_int32
-from cStringIO import StringIO
+from encoding_tool import read_int32_from_byte_arr
+from encoding_tool import write_int32
+from encoding_tool import read_msg
+from encoding_tool import write_msg
+from data_stream import OutputStream
+from data_stream import InputStream
+import util
 
 class TCPConnection:
     """The TCP/IP implementation connection"""
 
-    def __init__(self, address, port):
+    def __init__(self):
         self.socket = None
         self.agent = None
+        self.buffer_size = 4096
+        self.data_buffer = ''
 
     def connect(self, address, port):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(10) # 10 seconds to wait for connection
+        #self.socket.settimeout(10) # 10 seconds to wait for connection
         try:
             self.socket.connect((address, port))
         except socket.error, exception:
             # return without creating tcp reading loop
-            print(exception)
-            return
-        finally:
+            print(str(exception))
             self.socket.close()
+            return
 
         read_thread = threading.Thread(target=self.read_loop)
         read_thread.start()
@@ -29,53 +35,64 @@ class TCPConnection:
         self.agent = _agent
 
     def bytes_received(self, byte_array):
-        # convert byte_array to a message as defined by message.py
-        msg = None
-        self.agent.message_received(msg)
-        pass
+        input_stream = InputStream(byte_array)
+        msg = read_msg(input_stream)
+        if msg is not None:
+            self.agent.message_received(msg)
 
     def read_loop(self):
-        buffer_size = 4096
         while True:
+            #print('read loop loop')
             try:
-                # the first 4 byte is the length of message,
-                data_array = self.socket.recv(buffer_size)
-                if data_array:
-                    # if it is not empty string
-                    msg_size = read_int32(data_array[:4])
-                    if msg_size == 0:
-                        # marks the end of the message
-                        continue
-                    else:
-                        self.recv_by_size(data_array[4:], msg_size, buffer_size)
-                else:
-                    raise IOError('tcp client is disconnected')
-            except:
+                # note that this is blocking call
+                data_array = self.recv_msg()
+                #print('msg data:' + data_array)
+                self.bytes_received(data_array)
+            except IOError:
+                #print('except loop')
                 self.socket.close()
                 break
 
-    def recv_by_size(self, data_array, msg_size, buffer_size):
-        if msg_size <= buffer_size:
-            self.bytes_received(data_array)
-        else:
-            data_size_so_far = len(data_array)
-            while data_size_so_far < msg_size:
-                new_data_array = self.socket.recv(buffer_size)
-                if new_data_array:
-                    data_size_so_far += len(new_data_array)
-                    data_array += new_data_array
-                else:
-                    raise IOError('tcp client is disconnected')
-            if data_size_so_far == msg_size:
-                self.bytes_received(data_array)
-            else:
-                raise IOError('tcp client msg size error')
+    def recv_msg(self):
+        buffer_size = 4096
+        msg_size_data = self.data_buffer
+        while len(msg_size_data) < 4:
+            try:
+                msg_size_data += self.socket.recv(buffer_size)
+            except socket.error as error_msg:
+                raise IOError('tcp client IOError:' + error_msg)
 
-    def send_message(self, msg):
-        pass
+        if msg_size_data:
+            msg_size = read_int32_from_byte_arr(msg_size_data[0:4])
+            #print('msg.size:' + str(msg_size))
+            msg_data = msg_size_data[4:]
+            while len(msg_data) < msg_size:
+                try:
+                    msg_data += self.socket.recv(buffer_size)
+                except socket.error as error_msg:
+                    raise IOError('tcp client IOError:' + error_msg)
+            if msg_data:
+                self.data_buffer = msg_data[msg_size:]
+                msg_data[:msg_size]
+                return msg_data
+        else:
+            raise IOError('tcp client is disconnected')
+
+        return ''
+
+    def send_msg(self, msg):
+        tmp_output_stream = OutputStream()
+        write_msg(msg, tmp_output_stream)
+        write_int32(0, tmp_output_stream)
+        msg_data = tmp_output_stream.getvalue()
+        output_stream = OutputStream()
+        # first write the size of the message
+        write_int32(len(msg_data), output_stream)
+        output_stream.write(msg_data)
+        self.send_bytes(output_stream.getvalue())
 
     def send_bytes(self, byte_array):
-        self.socket.send(byte_array)
+        self.socket.sendall(byte_array)
 
     def shutdown(self):
         self.socket.close()
