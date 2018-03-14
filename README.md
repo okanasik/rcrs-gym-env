@@ -21,6 +21,6 @@ For that purposes we list the java classes and its corresponding python modules
 
 ## Testing
 
-To run the rescue server with test map: `./start.sh -c ../maps/gml/test/config/ -m ../maps/gml/test/map/`
+To run the rescue server with test map, you navigate to the boot directory of rescue simulator and run: `./start.sh -c ../maps/gml/test/config/ -m ../maps/gml/test/map/`
 
 To run the python agent module: `python agent_launcher.py -p 7000 -h 127.0.0.1 -fb 1 -pf 0 -at 0` Note that this script connects only a firebrigade agent.
