@@ -1,3 +1,21 @@
-RoboCup RCF Project
+# RoboCup RCF Project
 
 The Integration of RoboCup Rescue Agent Simulation to OpenAI Gym
+
+## Design 
+
+We build python API for RoboCup Rescue simulator. 
+Basically we aim to rewrite java communication and agent codes in python.
+For that purposes we list the java classes and its corresponding python modules
+
+---------------------------------
+|Java Classes  | Python Modules |
+|------------- | -------------- |
+|`rescuecore2.connection.TCPConnection`, `rescuecore2.connection.StreamConnection`, `rescuecore2.connection.AbstractConnection`, `rescuecore2.connection.Connect` | `tcp_connection` |
+|`rescuecore2.components.AbstractAgent`, `rescuecore2.components.AbstractComponent`, `rescuecore2.components.Component` | `rescue_agent` |
+|`rescuecore2.messages.control.ControlMessageFactory`, `rescuecore2.messages.control.StandardMessageFactory` | `message_factory` |
+|`rescuecore2.messages.component.*` | `message_component` |
+|`rescuecore2.messages.control.*` | `message` |
+|`rescuecore2.misc.EncodingTools` | `encoding_tool` |
+|`sample.LaunchSampleAgents` | `agent_launcher` |
+-------------------------------------------------
