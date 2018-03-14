@@ -8,7 +8,6 @@ We build python API for RoboCup Rescue simulator.
 Basically we aim to rewrite java communication and agent codes in python.
 For that purposes we list the java classes and its corresponding python modules
 
----------------------------------
 |Java Classes  | Python Modules |
 |------------- | -------------- |
 |`rescuecore2.connection.TCPConnection`, `rescuecore2.connection.StreamConnection`, `rescuecore2.connection.AbstractConnection`, `rescuecore2.connection.Connect` | `tcp_connection` |
@@ -19,3 +18,9 @@ For that purposes we list the java classes and its corresponding python modules
 |`rescuecore2.misc.EncodingTools` | `encoding_tool` |
 |`sample.LaunchSampleAgents` | `agent_launcher` |
 -------------------------------------------------
+
+## Testing
+
+To run the rescue server with test map: `./start.sh -c ../maps/gml/test/config/ -m ../maps/gml/test/map/`
+
+To run the python agent module: `python agent_launcher.py -p 7000 -h 127.0.0.1 -fb 1 -pf 0 -at 0` Note that this script connects only a firebrigade agent.
