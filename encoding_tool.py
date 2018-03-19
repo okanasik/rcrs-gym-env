@@ -1,5 +1,9 @@
 from data_stream import OutputStream
 import message_factory
+import registry
+from world_model import Entity,EntityID,Property
+
+reg = registry.Registry()
 
 
 def write_int32(value, output_stream):
@@ -49,3 +53,71 @@ def read_msg(input_stream):
             return msg
 
     return None
+
+def read_bytes(size,input_stream):
+    buff = []
+    for i in range(size):
+        buff.append(None)
+    input_stream.read(buff) #ToDo check difference between "read" and "readfully"
+    return buff
+        
+
+def read_boolean(input_stream):
+    b = input_stream.read()
+    return b==1
+    
+def write_boolean(b, output_stream):
+    output_stream.write(b)
+
+def read_property(input_stream):
+    urn = read_str(input_stream)
+    if urn == "" or urn is None:
+        return None
+    defined = read_boolean(input_stream)
+    result = reg.getCurrentRegistry().createProperty(urn)
+    if defined:
+        size = read_int32(input_stream)
+        content = read_bytes(size,input_stream)
+        if not(result is None):
+            result.read(content)
+    return result
+        
+        
+        
+def write_property(p, output_stream):
+    if p.instanceof(Property):
+        write_str(p.getURN(), output_stream)
+        write_boolean(p.isDefined(), output_stream)
+        if p.isDefined():
+            gather = [] #TO-DO CHECK THE BYTE ARRAY OUTPUTSTEAM
+            p.write(gather)
+            byts = gather.toByteArray()
+            write_int32(len(byts), output_stream)
+            output_stream.write(byts)
+            
+    return 
+            
+def read_entity(input_stream):
+    urn = read_str(input_stream)
+    if urn == "" or urn is None:
+        return None
+    eid = read_int32(input_stream)
+    size = read_int32(input_stream)
+    content = read_bytes(size,input_stream)
+    result = reg.getCurrentRegistry().createEntity(urn,EntityID(eid))
+    if not(result is None):
+        result.read(content)
+    return result
+            
+def write_entity(e,output_stream):
+    if e.instanceof(Entity):
+        gather = [] #TO-DO CHECK THEY BYTE ARRAY OUTPUT STREAM
+        e.write(gather)
+        byts = gather.toByteArray()
+        write_str(e.getURN(),output_stream)
+        write_int32(e.getID().getValue(),output_stream)
+        write_int32(len(byts), output_stream)
+        output_stream.write(byts)
+        
+        
+    
