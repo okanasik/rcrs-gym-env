@@ -4,9 +4,18 @@ from encoding_tool import write_str
 from encoding_tool import read_str
 from encoding_tool import write_entity
 from encoding_tool import read_entity
+from encoding_tool import write_msg
+from encoding_tool import read_msg
+from encoding_tool import write_float32
+from encoding_tool import read_float32
+from encoding_tool import read_bytes
+
 
 from change_set import ChangeSet
 from world_model import Entity,EntityID
+from command import Command
+from config import Config
+
 
 class IntComp:
     def __init__(self):
@@ -23,6 +32,9 @@ class IntComp:
 
     def read(self, input_stream):
         self.value = read_int32(input_stream)
+        
+    def __str__(self):
+        return str(self.name) + " = " + str(self.value)
 
 
 class StringComp:
@@ -41,6 +53,8 @@ class StringComp:
     def read(self, input_stream):
         self.value = read_str(input_stream)
 
+    def __str__(self):
+        return str(self.name) + " = " + str(self.value)
 
 class StringListComp:
     def __init__(self):
@@ -63,7 +77,8 @@ class StringListComp:
         for i in range(list_len):
             self.value_list.append(read_str(input_stream))
 
-
+    def __str__(self):
+        return str(self.name) + " = " + str(self.value_list)
 
 
 class ChangeSetComp:
@@ -86,13 +101,15 @@ class ChangeSetComp:
     def read(self, input_stream):
         self.changes = ChangeSet()
         self.changes.read(input_stream)
-    #TO-DO: toString method
+    
+    def __str__(self):
+        return str(self.name) + " = " + str(len(self.changes.get_changed_entities())) + " entities."
     
 class EntityComp:
     entity = None
     
     def __init__(self,n_entity=None):
-        if n_entity.isinstance(Entity):
+        if isinstance(n_entity,Entity):
             self.entity = n_entity
         else:
             self.entity = None
@@ -101,7 +118,7 @@ class EntityComp:
         return self.entity
     
     def set_entity(self, e):
-        if e.isinstance(Entity):
+        if isinstance(e,Entity):
             self.entity = e
             
     def write(self, output_string):
@@ -110,7 +127,8 @@ class EntityComp:
     def read(self, input_string):
         self.entity = read_entity(input_string)
         
-    #TO-DO: toString method
+    def __str__(self):
+        return str(self.name) + " = " + str(self.entity)
     
 class EntityIDComp:
     value = None
@@ -122,7 +140,7 @@ class EntityIDComp:
         return self.value
     
     def set_value(self, eid):
-        if eid.isinstance(EntityID):
+        if isinstance(eid,EntityID):
             self.value=eid
         return
     
@@ -132,13 +150,14 @@ class EntityIDComp:
     def read(self,input_stream):
         self.value = EntityID(read_int32(input_stream))
         
-    #TO-DO: toString method
+    def __str__(self):
+        return str(self.name) + " = " + str(self.value)
     
 class EntityIDListComp:
     ids = None
     
     def __init__(self,nids=None):
-        if not (nids is None) and nids.instanceof(list):
+        if not (nids is None) and isinstance(nids,list):
             self.ids = nids
         else:
             self.ids = []
@@ -147,7 +166,7 @@ class EntityIDListComp:
         return self.ids
     
     def set_ids(self,nids):
-        if not (nids is None) and nids.instanceof(list):
+        if not (nids is None) and isinstance(nids,list):
             self.ids = nids
         return
     
@@ -165,13 +184,14 @@ class EntityIDListComp:
             self.ids.append(eid)
         return
     
-    #TO-DO: toString method
+    def __str__(self):
+        return str(self.name) + " = " + str(self.ids)
     
 class EntityListComp:
     ents = None
     
     def __init__(self,nents=None):
-        if not (nents is None) and nents.instanceof(list):
+        if not (nents is None) and isinstance(nents,list):
             self.ents = nents
         else:
             self.ents = []
@@ -180,7 +200,7 @@ class EntityListComp:
         return self.ents
     
     def set_entities(self,nents):
-        if not (nents is None) and nents.instanceof(list):
+        if not (nents is None) and isinstance(nents,list):
             self.ents = nents
         return
     
@@ -198,14 +218,15 @@ class EntityListComp:
             self.ents.append(e)
         return
     
-    #TO-DO: toString method
+    def __str__(self):
+        return str(self.name) + " = " + str(len(self.ents)) + " entities."
         
     
 class IntListComp:
     ints = None
     
     def __init__(self,nints=None):
-        if not (nints is None) and nints.instanceof(list):
+        if not (nints is None) and isinstance(nints,list):
             self.ints = nints
         else:
             self.ints = []
@@ -214,7 +235,7 @@ class IntListComp:
         return self.ints
     
     def set_values(self,nints):
-        if not (nints is None) and nints.instanceof(list):
+        if not (nints is None) and isinstance(nints,list):
             self.ints = nints
         return
     
@@ -232,9 +253,154 @@ class IntListComp:
             self.ints.append(e)
         return
     
-    #TO-DO: toString method
-        
+    def __str__(self):
+        return str(self.name) + " = " + str(self.ints)
 
+    
+class CommandListComp:
+    commands = None
+    
+    def __init__(self, lcommands=None):
+        if not(lcommands is None) and isinstance(lcommands,list):
+            self.commands = lcommands
+        else:
+            self.commands = []
+            
+    def get_commands(self):
+        return self.commands
+    
+    def set_commands(self,lcommands):
+        if not(lcommands is None) and isinstance(lcommands,list):
+            self.commands = lcommands
+        return
+    
+    def write(self, output_stream):
+        write_int32(len(self.commands), output_stream)
+        for command in self.commands:
+            write_msg(command,output_stream)
+        return
+
+    def read(self,input_stream):
+        self.commands.clear()
+        count = read_int32(input_stream)
+        for i in range(count):
+            m = read_msg(input_stream)
+            if isinstance(m,Command):
+                self.commands.append(m)
+            else:
+                print "Command list stream contained a non-command message:", m, "(", type(m),")"
+        return
+    
+    def __str__(self):
+        return str(len(self.commands)) + " commands."
+        
+class FloatListComp:
+    data = None
+    def __init__(self, floats=None):
+        if not(floats is None) and isinstance(floats,list):
+            self.data = floats
+        else:
+            self.data = []
+            
+    def get_values(self):
+        return self.data
+    
+    def set_values(self,floats):
+        if not(floats is None) and isinstance(floats,list):
+            self.data = floats
+        return
+    
+    def write(self,output_stream):
+        write_int32(len(self.data), output_stream)
+        for f in self.data:
+            write_float32(f,output_stream)
+        return
+    
+    def read(self,input_stream):
+        self.data.clear()
+        count = read_int32(input_stream)
+        for i in range(count):
+            f = read_float32(input_stream)
+            self.data.append(f)
+        return
+        
+    def __str__(self):
+        return str(self.name) + " = " + str(self.data)
+    
+        
+class RawDataComp:
+    byte_data = None
+    
+    def __init__(self, bdata=None):
+        if not(bdata is None) and isinstance(bdata,list):
+            self.byte_data = bdata
+        else:
+            self.byte_data = []
+            
+    def get_data(self):
+        return self.byte_data
+    
+    def set_data(self,bdata):
+        if not(bdata is None) and isinstance(bdata,list):
+            self.byte_data = bdata
+        return
+    
+    def write(self,output_stream):
+        write_int32(len(self.byte_data), output_stream)
+        for b in self.byte_data:
+            output_stream.write(self.b) #CHECK WRITING OF BYTES
+        return
+    
+    def read(self,input_stream):
+        self.byte_data = read_bytes(read_int32(input_stream),input_stream) #CHECK READING OF BYTES
+        return
+
+    def __str__(self):
+        return (self.name) + " = " + str(len(self.byte_data)) + " bytes of raw data."
+    
+
+class ConfigComp:
+    config = None
+    
+    def __init__(self,nconfig=None):
+        if not(nconfig is None) and isinstance(nconfig,Config):
+            self.config = nconfig
+        else:
+            self.config = Config()
+            
+    def get_config(self):
+        return self.config
+    
+    def set_config(self,nconfig):
+        if not(nconfig is None) and isinstance(nconfig,Config):
+            self.config = nconfig
+        return
+    
+    def write(self,output_stream):
+        keys = self.config.get_all_keys()
+        write_int32(len(keys),output_stream)
+        for k in keys:
+            write_str(k,output_stream)
+            write_str(self.config.get_value(k), output_stream)
+        return
+    
+    def read(self,input_stream):
+        count = read_int32(input_stream)
+        self.config = Config()
+        for i in range(count):
+            key = read_str(input_stream)
+            value = read_str(input_stream)
+            self.config.set_value(key,value)
+        return
+    
+    def __str__(self):
+        return str(self.name) + " (" + str(len(self.config.get_all_keys())) + " entries)" 
+    
+    
+        
+    
+        
+        
         
 
     

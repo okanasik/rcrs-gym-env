@@ -28,24 +28,24 @@ class Registry():
         self.property_factories = {}
         self.message_factories = {}
         
-    def getCurrentRegistry(self):
+    def get_current_registry(self):
         return self.CURRENT_REGISTRY
     
-    def setCurrentRegistry(self, r):
+    def set_current_registry(self, r):
         if r.isinstance(Registry):
             self.CURRENT_REGISTRY = r
             return True
         return False
     
-    def toString(self):
+    def to_string(self):
         return self.getName()
     
-    def getName(self):
+    def get_name(self):
         if self.name is None:
             return super.toString()
         return self.name
     
-    def createProperty(self, urn):
+    def create_property(self, urn):
         factory = self.getPropertyFactory(urn)
         
         if factory is None:
@@ -54,7 +54,7 @@ class Registry():
             return None
         return factory.makeProperty(urn)
     
-    def getPropertyFactory(self,urn):
+    def get_property_factory(self,urn):
         result = None
         result = self.property_factories.get(urn)  #TO-DO: Synchronized way
         if result is None and not (self.parent is None):
@@ -62,7 +62,7 @@ class Registry():
         return result 
         
         
-    def createEntity(self, urn, eid):
+    def create_entity(self, urn, eid):
         factory = self.getEntityFactory(urn)
         if factory is None:
             message = self.getName() + ": Entity " + urn + " not recognized."
@@ -70,7 +70,7 @@ class Registry():
             return None
         return factory.makeEntity(urn,id)
     
-    def getEntityFactory(self, urn):
+    def get_entity_factory(self, urn):
         result = None
         result = self.entity_factories.get(urn) #TO-DO: Synchronized way
         if result is None and not (self.parent is None):

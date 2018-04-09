@@ -2,7 +2,6 @@ from message_component import IntComp
 from message_component import StringComp
 from message_component import StringListComp
 
-
 urns = {}
 
 
@@ -50,3 +49,6 @@ class AKConnect(Message):
         self.version_comp.set_value(version)
         self.agent_name_comp.set_value(agent_name)
         self.requested_entities_comp.set_value(requested_entity_types)
+
+
+    

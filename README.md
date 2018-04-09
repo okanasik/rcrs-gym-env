@@ -18,8 +18,10 @@ For that purposes we list the java classes and its corresponding python modules
 |`rescuecore2.misc.EncodingTools` | `encoding_tool` |
 |`sample.LaunchSampleAgents` | `agent_launcher` |
 |`rescuecore2.worldmodel.ChangeSet`|`change_set`|
-|`rescuecore2.worldmodel.Entity`,`rescuecore2.worldmodel.EntityID`,`rescuecore2.worldmodel.Property`|`world_model`|
+|`rescuecore2.worldmodel.Entity`,`rescuecore2.worldmodel.EntityID`,
+`rescuecore2.worldmodel.Property`|`world_model`|
 |`rescuecore2.registry.Registry`|`registry`|
+|`rescuecore2.config.*`|`config`|
 -------------------------------------------------
 
 ## Testing

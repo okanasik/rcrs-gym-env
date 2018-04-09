@@ -26,10 +26,10 @@ class ChangeSet:
              self.entityURNs = {} #Map <EntityID, String>
         pass
              
-    def addChange(self, *args):
+    def add_change(self, *args):
         if len(args)==2:
             ent,prop = args
-            self.addChange(ent.getID(), ent.getURN(), prop)
+            self.add_change(ent.get_id(), ent.get_urn(), prop)
             pass
         elif len(args)==3:
             ent_id, ent_urn, prop = args
@@ -41,33 +41,33 @@ class ChangeSet:
                 self.changes[ent_id] = {}
             
             temp_hash = self.changes[ent_id] 
-            temp_hash[propy.getURN] = propy
+            temp_hash[propy.get_urn()] = propy
             self.changes[ent_id] = temp_hash
             self.entityURNs[ent_id] = ent_urn
         return
     
-    def entityDeleted(self, ent_id):
+    def entity_deleted(self, ent_id):
         self.deleted.append(ent_id)
         self.changes.pop(ent_id,None)  
         
-    def getChangedProperties(self, ent_id):
+    def get_changed_properties(self, ent_id):
         if self.changes.has_key(ent_id):
             return self.changes[ent_id].values()
         return []
     
-    def getChangedProperty(self, ent_id, urn):
+    def get_changed_property(self, ent_id, urn):
         props = self.changes.get(ent_id)
         if not (props is None):
             return props.get(urn)
         return None
     
-    def getChangedEntities(self):
+    def get_changed_entities(self):
         return self.changes.keys()
     
-    def getDeletedEntities(self):
+    def get_deleted_entities(self):
         return self.deleted
     
-    def getEntityURN(self, ent_id):
+    def get_entity_urn(self, ent_id):
         return self.entityURNs.get(ent_id)
     
     def merge(self, other):
@@ -76,21 +76,21 @@ class ChangeSet:
             o_deleted = other.deleted
             for k,v in o_changes.iteritems():
                 e_id = k
-                urn = other.getEntityURN(e_id)
+                urn = other.get_entity_urn(e_id)
                 for p in v.values():
-                    self.addChange(e_id,urn,p)   
+                    self.add_change(e_id,urn,p)   
             for e in o_deleted:
                 if e not in self.deleted:
                     self.deleted.append(e)
             
         return
     
-    def addAll(self, c):
+    def add_all(self, c):
         for elem in c:
             if elem.isinstance(Entity):
-                for p in elem.getProperties():
-                    if p.isDefined():
-                        self.addChange(elem,p)
+                for p in elem.get_properties():
+                    if p.is_defined():
+                        self.add_change(elem,p)
         return
     
     def write(self, output_stream):
@@ -98,14 +98,14 @@ class ChangeSet:
         for k,v in self.changes.iteritems():
             e_id = k
             props = v
-            et.write_int32(e_id.getValue(),output_stream)
-            et.write_str(self.getEntityURN(e_id),output_stream)
+            et.write_int32(e_id.get_value(),output_stream)
+            et.write_str(self.get_entity_urn(e_id),output_stream)
             et.write_int32(len(props),output_stream)
             for p in props:
                 et.write_property(p,output_stream)
             et.write_int32(len(self.deleted),output_stream)
             for e_id in self.deleted:
-                et.write_int32(e_id.getValue(),output_stream)
+                et.write_int32(e_id.get_value(),output_stream)
         return
     
     def read(self, input_stream):
@@ -120,16 +120,16 @@ class ChangeSet:
             for j in range(propCount):
                 p = et.read_property(input_stream)
                 if not (p is None):
-                    self.addChange(e_id,urn,p)
+                    self.add_change(e_id,urn,p)
         deletedCount = et.read_int32(input_stream)
         for i in range(deletedCount):
             e_id = EntityID(et.read_int32(input_stream))
             self.deleted.append(e_id)
         return
     
-    def toString(self):
+    def to_string(self):
         result = ""
-        result += "ChangeSet:"
+        result += "change_set:"
         #TO-DO: Complete toString features
         return result 
     

@@ -23,13 +23,13 @@ class EntityID:
             return self.e_id == o.e_id
         return False
     
-    def hashCode(self):
+    def hash_code(self):
         return self.e_id
     
-    def getValue(self):
+    def get_value(self):
         return self.e_id
     
-    def toString(self):
+    def to_string(self):
         return str(self.e_id)
     
     
@@ -38,12 +38,12 @@ class EntityID:
 class Property:
     #Interface for the properties that make up an entity
     
-    def getURN(self):
+    def get_urn(self):
         #Get the URN of this property. 
         #return The urn of this property    
         pass
     
-    def isDefined(self):
+    def is_defined(self):
         #Does this property have a defined value? 
         #@return True if a value has been set for this property, False otherwise
         pass
@@ -52,7 +52,7 @@ class Property:
         #Undefine the value of this property. Future calls to isDefined() will return false.
         pass
     
-    def takeValue (self,other):
+    def take_value (self,other):
         #Take on the value of another property
         #@param other - The other property to inspect
         #@throws IllegalArgumentException if the other property is the wrong type.
@@ -70,7 +70,7 @@ class Property:
         #@throws IOException if the read fails.
         pass
     
-    def getValue(self):
+    def get_value(self):
         #Get the value of this property. If the property is undefined, then the return value should be None.
         #@return The Value of this property
         pass
@@ -84,22 +84,22 @@ class Property:
 
 class Entity:
     
-    def addEntityListener(self,l):
+    def add_entity_listener(self,l):
         pass
     
-    def removeEntityListener(self,l):
+    def remove_entity_listener(self,l):
         pass
     
-    def getID(self):
+    def get_id(self):
         pass
 
-    def getURN(self):
+    def get_urn(self):
         pass
     
-    def getProperties(self):
+    def get_properties(self):
         pass
     
-    def getProperty(self, urn):
+    def get_property(self, urn):
         pass
     
     def write(self, out):
