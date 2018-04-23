@@ -1,8 +1,10 @@
 import argparse
-from rescue_agent import FireBrigade
-from rescue_agent import PoliceForce
-from rescue_agent import AmbulanceTeam
+from rescue_agent import FireBrigadeAgent
+from rescue_agent import PoliceForceAgent
+from rescue_agent import AmbulanceTeamAgent
 from tcp_connection import TCPConnection
+import sys
+import time
 
 
 class AgentLauncher:
@@ -19,21 +21,21 @@ class AgentLauncher:
     def connect_agents(self):
         try:
             while self.numfb != 0:
-                self.connect(FireBrigade())
+                self.connect(FireBrigadeAgent())
                 self.numfb -= 1
         except IOError:
             pass
 
         try:
             while self.numpf != 0:
-                self.connect(PoliceForce())
+                self.connect(PoliceForceAgent())
                 self.numpf -= 1
         except IOError:
             pass
 
         try:
             while self.numat != 0:
-                self.connect(AmbulanceTeam())
+                self.connect(AmbulanceTeamAgent())
                 self.numat -= 1
         except IOError:
             pass
@@ -54,5 +56,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     launcher = AgentLauncher(int(args.port), args.hostname, int(args.firebrigade), int(args.policeforce), int(args.ambulanceteam))
+
+    while True:
+        try:
+            time.sleep(100)
+        except KeyboardInterrupt:
+            #todo: make sure that message reading threads will clean up before exit
+            sys.exit(1)
+
 
 

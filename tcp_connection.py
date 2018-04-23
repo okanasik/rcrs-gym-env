@@ -29,6 +29,7 @@ class TCPConnection:
             return
 
         read_thread = threading.Thread(target=self.read_loop)
+        read_thread.daemon = True
         read_thread.start()
 
     def set_agent(self, _agent):
@@ -46,7 +47,8 @@ class TCPConnection:
             try:
                 # note that this is blocking call
                 data_array = self.recv_msg()
-                #print('msg data:' + data_array)
+                print('msg data:' + data_array)
+                #util.print_bytes(data_array)
                 self.bytes_received(data_array)
             except IOError:
                 #print('except loop')

@@ -1,7 +1,7 @@
 import message
 from data_stream import InputStream
 
-def create_msg(urn, byte_array):
+def create_property(urn, byte_array):
     urns = message.all_msg_urns()
     if urn in urns:
         class_name = urns[urn]

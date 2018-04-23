@@ -16,7 +16,6 @@ from world_model import Entity,EntityID
 from command import Command
 from config import Config
 
-
 class IntComp:
     def __init__(self):
         self.value = None
@@ -72,7 +71,7 @@ class StringListComp:
             write_str(value, output_stream)
 
     def read(self, input_stream):
-        self.value_list.clear()
+        self.value_list = []
         list_len = read_int32(input_stream)
         for i in range(list_len):
             self.value_list.append(read_str(input_stream))
@@ -126,13 +125,12 @@ class EntityComp:
         
     def read(self, input_string):
         self.entity = read_entity(input_string)
-        
+
     def __str__(self):
         return str(self.name) + " = " + str(self.entity)
-    
+
+
 class EntityIDComp:
-    value = None
-    
     def __init__(self, value=None):
         self.value = value
         
@@ -140,19 +138,18 @@ class EntityIDComp:
         return self.value
     
     def set_value(self, eid):
-        if isinstance(eid,EntityID):
-            self.value=eid
-        return
+        self.value = eid
     
     def write(self, output_stream):
-        write_int32(self.value.getValue(),output_stream)
+        write_int32(self.value.get_value(),output_stream)
         
     def read(self,input_stream):
         self.value = EntityID(read_int32(input_stream))
-        
+
     def __str__(self):
         return str(self.name) + " = " + str(self.value)
-    
+
+
 class EntityIDListComp:
     ids = None
     
@@ -177,21 +174,20 @@ class EntityIDListComp:
         return
     
     def read(self,input_stream):
-        self.ids.clear()
+        self.ids = []
         count = read_int32(input_stream)
         for i in range(count):
             eid = EntityID(read_int32(input_stream))
             self.ids.append(eid)
         return
-    
+
     def __str__(self):
         return str(self.name) + " = " + str(self.ids)
-    
+
+
 class EntityListComp:
-    ents = None
-    
     def __init__(self,nents=None):
-        if not (nents is None) and isinstance(nents,list):
+        if nents is not None:
             self.ents = nents
         else:
             self.ents = []
@@ -200,23 +196,20 @@ class EntityListComp:
         return self.ents
     
     def set_entities(self,nents):
-        if not (nents is None) and isinstance(nents,list):
+        if nents is not None:
             self.ents = nents
-        return
     
-    def write(self,output_stream):
+    def write(self, output_stream):
         write_int32(len(self.ents), output_stream)
         for ent in self.ents:
-            write_entity(ent.getValue(),output_stream)
-        return
+            write_entity(ent, output_stream)
     
     def read(self,input_stream):
-        self.ents.clear()
+        self.ents = []
         count = read_int32(input_stream)
         for i in range(count):
-            e = Entity(read_entity(input_stream))
+            e = read_entity(input_stream)
             self.ents.append(e)
-        return
     
     def __str__(self):
         return str(self.name) + " = " + str(len(self.ents)) + " entities."
@@ -246,13 +239,13 @@ class IntListComp:
         return
     
     def read(self,input_stream):
-        self.ints.clear()
+        self.ints = []
         count = read_int32(input_stream)
         for i in range(count):
             e = read_int32(input_stream)
             self.ints.append(e)
         return
-    
+
     def __str__(self):
         return str(self.name) + " = " + str(self.ints)
 
@@ -355,57 +348,33 @@ class RawDataComp:
         self.byte_data = read_bytes(read_int32(input_stream),input_stream) #CHECK READING OF BYTES
         return
 
-    def __str__(self):
-        return (self.name) + " = " + str(len(self.byte_data)) + " bytes of raw data."
-    
 
 class ConfigComp:
-    config = None
-    
-    def __init__(self,nconfig=None):
-        if not(nconfig is None) and isinstance(nconfig,Config):
-            self.config = nconfig
-        else:
-            self.config = Config()
-            
+
+    def __init__(self):
+        self.config = None
+
     def get_config(self):
         return self.config
-    
-    def set_config(self,nconfig):
-        if not(nconfig is None) and isinstance(nconfig,Config):
-            self.config = nconfig
-        return
-    
-    def write(self,output_stream):
-        keys = self.config.get_all_keys()
-        write_int32(len(keys),output_stream)
-        for k in keys:
-            write_str(k,output_stream)
-            write_str(self.config.get_value(k), output_stream)
-        return
-    
-    def read(self,input_stream):
-        count = read_int32(input_stream)
+
+    def set_config(self, _config):
+        self.config = _config
+
+    def write(self, output_stream):
+        keys = self.config.get_keys()
+        write_int32(len(keys), output_stream)
+        for key in keys:
+            value = self.config.get_value(key)
+            write_str(key, output_stream)
+            write_str(value, output_stream)
+
+    def read(self, input_stream):
+        key_count = read_int32(input_stream)
         self.config = Config()
-        for i in range(count):
+        for i in range(key_count):
             key = read_str(input_stream)
             value = read_str(input_stream)
-            self.config.set_value(key,value)
-        return
-    
+            self.config.set_value(key, value)
+
     def __str__(self):
-        return str(self.name) + " (" + str(len(self.config.get_all_keys())) + " entries)" 
-    
-    
-        
-    
-        
-        
-        
-
-    
-
-    
-
-        
-        
+        return (self.name) + " = " + str(len(self.byte_data)) + " bytes of raw data."
