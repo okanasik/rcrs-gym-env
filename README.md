@@ -30,4 +30,6 @@ To run the rescue server with test map, you navigate to the boot directory of re
 
 To run the python agent module: `python agent_launcher.py -p 7000 -h 127.0.0.1 -fb 1 -pf 0 -at 0` Note that this script connects only a firebrigade agent.
 
-To run the dummy OpenAIGym environment:  `python testing.py`
+To run the dummy OpenAIGym environment: 
+First, we need to run: `python setup.py install`
+And then: `python testing.py`
