@@ -13,7 +13,7 @@ class InputStream:
         if count == -1:
             return ''.join(self.byte_queue)
         else:
-            if len(self.byte_queue) < count:
+            if len(self.byte_queue) <= count:
                 return ''.join(self.byte_queue)
             else:
                 data_list = []

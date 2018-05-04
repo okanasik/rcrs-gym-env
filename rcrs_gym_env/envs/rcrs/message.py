@@ -6,16 +6,15 @@ from message_component import EntityIDComp
 from message_component import EntityListComp
 from message_component import ConfigComp
 
-urns = {}
-
+msg_urns = {}
 
 def all_msg_urns():
-    if len(urns) == 0:
-        urns[AKConnect.urn] = 'AKConnect'
-        urns[KAConnectOK.urn] = 'KAConnectOK'
-        return urns
+    if len(msg_urns) == 0:
+        msg_urns[AKConnect.urn] = 'AKConnect'
+        msg_urns[KAConnectOK.urn] = 'KAConnectOK'
+        return msg_urns
     else:
-        return urns
+        return msg_urns
 
 
 class Message:

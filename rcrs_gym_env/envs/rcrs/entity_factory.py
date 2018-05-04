@@ -16,20 +16,20 @@ def create_entity(entity_id, urn):
         return wm.Hydrant(entity_id)
     elif urn == wm.GasStation.urn:
         return wm.GasStation(entity_id)
-    elif urn == wm.FireStation.urn:
-        return wm.FireStation(entity_id)
-    elif urn == wm.AmbulanceCentre.urn:
-        return wm.AmbulanceCentre(entity_id)
-    elif urn == wm.PoliceOffice.urn:
-        return wm.PoliceOffice(entity_id)
+    elif urn == wm.FireStationEntity.urn:
+        return wm.FireStationEntity(entity_id)
+    elif urn == wm.AmbulanceCentreEntity.urn:
+        return wm.AmbulanceCentreEntity(entity_id)
+    elif urn == wm.PoliceOfficeEntity.urn:
+        return wm.PoliceOfficeEntity(entity_id)
     elif urn == wm.Civilian.urn:
         return wm.Civilian(entity_id)
-    elif urn == wm.FireBrigade.urn:
-        return wm.FireBrigade(entity_id)
-    elif urn == wm.AmbulanceTeam.urn:
-        return wm.AmbulanceTeam(entity_id)
-    elif urn == wm.PoliceForce.urn:
-        return wm.PoliceForce(entity_id)
+    elif urn == wm.FireBrigadeEntity.urn:
+        return wm.FireBrigadeEntity(entity_id)
+    elif urn == wm.AmbulanceTeamEntity.urn:
+        return wm.AmbulanceTeamEntity(entity_id)
+    elif urn == wm.PoliceForceEntity.urn:
+        return wm.PoliceForceEntity(entity_id)
     else:
         print('unknown entity urn:' + urn)
         return None

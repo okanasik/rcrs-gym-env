@@ -18,7 +18,7 @@ def write_int32(value, output_stream):
 
 
 def read_int32_from_byte_arr(byte_array):
-    value = int((ord(byte_array[0]) << 24) + (ord(byte_array[1]) << 18) + (ord(byte_array[2]) << 8) + ord(byte_array[3]))
+    value = int((ord(byte_array[0]) << 24) + (ord(byte_array[1]) << 16) + (ord(byte_array[2]) << 8) + ord(byte_array[3]))
     return value
 
 
@@ -27,14 +27,14 @@ def read_int32(input_stream):
     return read_int32_from_byte_arr(byte_array)
 
 
-def write_double(value, output_stream):
-    packed = struct.pack('!d', value)
-    output_stream.write(packed)
+# def write_double(value, output_stream):
+#     packed = struct.pack('!d', value)
+#     output_stream.write(packed)
 
 
-def read_double(input_stream):
-    byte_array = input_stream.read(8)
-    return struct.unpack('!d', byte_array)
+# def read_double(input_stream):
+#     byte_array = input_stream.read(8)
+#     return struct.unpack('!d', byte_array)
 
 
 def write_str(value, output_stream):
@@ -67,19 +67,12 @@ def read_msg(input_stream):
             return msg
 
     return None
-
-
-def read_bytes(size,input_stream):
-    buff = []
-    for i in range(size):
-        buff.append(None)
-    input_stream.read(buff) #ToDo check difference between "read" and "readfully"
-    return buff
         
 
 def read_boolean(input_stream):
-    b = ord(input_stream.read(1))
-    return b==1
+    boolean_char = input_stream.read(1)
+    b = ord(boolean_char)
+    return b == 1
 
 
 def write_boolean(b, output_stream):
@@ -90,7 +83,6 @@ def write_boolean(b, output_stream):
 
 
 def read_property(input_stream):
-    # TODO: check this property reading method
     result = None
     urn = read_str(input_stream)
     if urn == "" or urn is None:
@@ -98,10 +90,8 @@ def read_property(input_stream):
     defined = read_boolean(input_stream)
     if defined:
         size = read_int32(input_stream)
-        content = read_bytes(size,input_stream)
-        result = property_factory.create_property(urn, content)
-        if not(result is None):
-            result.read(content)
+        property_byte_array = input_stream.read(size)
+        result = property_factory.create_property(urn, property_byte_array)
     return result
         
 
@@ -122,9 +112,9 @@ def read_entity(input_stream):
     eid = read_int32(input_stream)
     entity_size = read_int32(input_stream)
     entity = entity_factory.create_entity(eid, urn)
-    byte_array_data = input_stream.read(entity_size)
-    entity_input_stream = InputStream(byte_array_data)
-    entity.read(entity_input_stream)
+    #byte_array_data = input_stream.read(entity_size)
+    #entity_input_stream = InputStream(byte_array_data)
+    entity.read(input_stream)
     return entity
 
 
@@ -153,3 +143,20 @@ def write_float32(value,output_stream):
     output_stream.write(chr((value >> 8) & 0xFF))
     output_stream.write(chr(value & 0xFF))
     return
+
+
+if __name__ == '__main__':
+    print("writing the value:549139337")
+    output_stream = OutputStream()
+    write_int32(549139337, output_stream)
+    four_bytes = output_stream.getvalue()
+    for my_ch in four_bytes:
+        print(ord(my_ch))
+
+    print("reading back")
+    input_stream = InputStream(four_bytes)
+    read_four_bytes = input_stream.read(4)
+    for read_ch in read_four_bytes:
+        print(ord(read_ch))
+
+    print("read value:" + str(read_int32_from_byte_arr(read_four_bytes)))

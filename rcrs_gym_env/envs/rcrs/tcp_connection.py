@@ -35,7 +35,7 @@ class TCPConnection:
     def set_agent(self, _agent):
         self.agent = _agent
 
-    def bytes_received(self, byte_array):
+    def msg_bytes_received(self, byte_array):
         input_stream = InputStream(byte_array)
         msg = read_msg(input_stream)
         if msg is not None:
@@ -43,15 +43,13 @@ class TCPConnection:
 
     def read_loop(self):
         while True:
-            #print('read loop loop')
             try:
                 # note that this is blocking call
-                data_array = self.recv_msg()
-                print('msg data:' + data_array)
+                message_data = self.recv_msg()
+                #print('msg data:' + data_array)
                 #util.print_bytes(data_array)
-                self.bytes_received(data_array)
+                self.msg_bytes_received(message_data)
             except IOError:
-                #print('except loop')
                 self.socket.close()
                 break
 
@@ -75,8 +73,7 @@ class TCPConnection:
                     raise IOError('tcp client IOError:' + error_msg)
             if msg_data:
                 self.data_buffer = msg_data[msg_size:]
-                msg_data[:msg_size]
-                return msg_data
+                return msg_data[:msg_size]
         else:
             raise IOError('tcp client is disconnected')
 

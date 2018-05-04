@@ -4,16 +4,13 @@ from encoding_tool import write_str
 from encoding_tool import read_str
 from encoding_tool import write_entity
 from encoding_tool import read_entity
-from encoding_tool import write_msg
-from encoding_tool import read_msg
 from encoding_tool import write_float32
 from encoding_tool import read_float32
-from encoding_tool import read_bytes
 
 
 from change_set import ChangeSet
-from world_model import Entity,EntityID
-from command import Command
+from world_model import Entity, EntityID
+# from command import Command
 from config import Config
 
 class IntComp:
@@ -250,42 +247,42 @@ class IntListComp:
         return str(self.name) + " = " + str(self.ints)
 
     
-class CommandListComp:
-    commands = None
-    
-    def __init__(self, lcommands=None):
-        if not(lcommands is None) and isinstance(lcommands,list):
-            self.commands = lcommands
-        else:
-            self.commands = []
-            
-    def get_commands(self):
-        return self.commands
-    
-    def set_commands(self,lcommands):
-        if not(lcommands is None) and isinstance(lcommands,list):
-            self.commands = lcommands
-        return
-    
-    def write(self, output_stream):
-        write_int32(len(self.commands), output_stream)
-        for command in self.commands:
-            write_msg(command,output_stream)
-        return
-
-    def read(self,input_stream):
-        self.commands.clear()
-        count = read_int32(input_stream)
-        for i in range(count):
-            m = read_msg(input_stream)
-            if isinstance(m,Command):
-                self.commands.append(m)
-            else:
-                print "Command list stream contained a non-command message:", m, "(", type(m),")"
-        return
-    
-    def __str__(self):
-        return str(len(self.commands)) + " commands."
+# class CommandListComp:
+#     commands = None
+#
+#     def __init__(self, lcommands=None):
+#         if not(lcommands is None) and isinstance(lcommands,list):
+#             self.commands = lcommands
+#         else:
+#             self.commands = []
+#
+#     def get_commands(self):
+#         return self.commands
+#
+#     def set_commands(self,lcommands):
+#         if not(lcommands is None) and isinstance(lcommands,list):
+#             self.commands = lcommands
+#         return
+#
+#     def write(self, output_stream):
+#         write_int32(len(self.commands), output_stream)
+#         for command in self.commands:
+#             write_msg(command,output_stream)
+#         return
+#
+#     def read(self,input_stream):
+#         self.commands.clear()
+#         count = read_int32(input_stream)
+#         for i in range(count):
+#             m = read_msg(input_stream)
+#             if isinstance(m,Command):
+#                 self.commands.append(m)
+#             else:
+#                 print "Command list stream contained a non-command message:", m, "(", type(m),")"
+#         return
+#
+#     def __str__(self):
+#         return str(len(self.commands)) + " commands."
         
 class FloatListComp:
     data = None
@@ -345,7 +342,8 @@ class RawDataComp:
         return
     
     def read(self,input_stream):
-        self.byte_data = read_bytes(read_int32(input_stream),input_stream) #CHECK READING OF BYTES
+        data_size = read_int32(input_stream)
+        self.byte_data = input_stream.read(data_size)
         return
 
 

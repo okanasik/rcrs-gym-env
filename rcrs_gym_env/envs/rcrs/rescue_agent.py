@@ -51,6 +51,7 @@ class RescueAgent:
 
     def handle_connect_ok(self, msg):
         if msg.request_id_comp.get_value() == self.connect_request_id:
+            print("handle connect ok")
             self.post_connect(msg.agent_id_comp.get_value(), msg.world_comp.get_entities(), msg.config_comp.get_config())
             ack_msg = AKAcknowledge(self.connect_request_id, msg.agent_id_comp.get_value())
             self.connection.send_msg(ack_msg)

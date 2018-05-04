@@ -15,7 +15,7 @@ from world_model import EntityID
 
 class Command(Message):
      
-    def __init__(self,nid = 0, ntime = 0):
+    def __init__(self, nid = 0, ntime = 0):
         self.agent_id = EntityID(nid)
         self.time = ntime
     
