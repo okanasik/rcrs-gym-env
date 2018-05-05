@@ -5,13 +5,18 @@ from message_component import StringListComp
 from message_component import EntityIDComp
 from message_component import EntityListComp
 from message_component import ConfigComp
+from message_component import ChangeSetComp
+from message_component import CommandListComp
 
 msg_urns = {}
 
 def all_msg_urns():
     if len(msg_urns) == 0:
         msg_urns[AKConnect.urn] = 'AKConnect'
+        msg_urns[AKAcknowledge.urn] = 'AKAcknowledge'
         msg_urns[KAConnectOK.urn] = 'KAConnectOK'
+        msg_urns[KAConnectError.urn] = 'KAConnectError'
+        msg_urns[KASense.urn] = 'KASense'
         return msg_urns
     else:
         return msg_urns
@@ -55,6 +60,24 @@ class AKConnect(Message):
         self.requested_entities_comp.set_value(requested_entity_types)
 
 
+class AKAcknowledge(Message):
+    urn = 'urn:rescuecore2:messages.control:ak_acknowledge'
+
+    def __init__(self, request_id, agent_id):
+        Message.__init__(self)
+        self.request_id_comp = IntComp()
+        self.agent_id_comp = EntityIDComp()
+
+        self.add_component(self.request_id_comp)
+        self.add_component(self.agent_id_comp)
+
+        self.set_message(request_id, agent_id)
+
+    def set_message(self, request_id, agent_id):
+        self.request_id_comp.set_value(request_id)
+        self.agent_id_comp.set_value(agent_id)
+
+
 class KAConnectOK(Message):
     urn = 'urn:rescuecore2:messages.control:ka_connect_ok'
 
@@ -93,19 +116,81 @@ class KAConnectError(Message):
         self.reason_comp.set_value(reason)
 
 
-class AKAcknowledge(Message):
-    urn = 'urn:rescuecore2:messages.control:ak_acknowledge'
+class KASense(Message):
+    urn = 'urn:rescuecore2:messages.control:ka_sense'
 
-    def __init__(self, request_id, agent_id):
+    def __init__(self):
         Message.__init__(self)
-        self.request_id_comp = IntComp()
-        self.agent_id_comp = EntityIDComp()
+        self.agent_id = EntityIDComp()
+        self.time = IntComp()
+        self.updates = ChangeSetComp()
+        self.hear = CommandListComp()
 
-        self.add_component(self.request_id_comp)
-        self.add_component(self.agent_id_comp)
+        self.add_component(self.agent_id)
+        self.add_component(self.time)
+        self.add_component(self.updates)
+        self.add_component(self.hear)
 
-        self.set_message(request_id, agent_id)
+    def get_change_set(self):
+        return self.updates.get_change_set()
 
-    def set_message(self, request_id, agent_id):
-        self.request_id_comp.set_value(request_id)
-        self.agent_id_comp.set_value(agent_id)
+    def get_hearing(self):
+        return self.hear.get_commands()
+
+    def get_time(self):
+        return self.time.get_value()
+
+
+# command messages send by agents to the kernel
+class AKMove(Message):
+    def __init__(self):
+        pass
+
+
+class AKRest(Message):
+    def __init__(self):
+        pass
+
+
+class AKExtinguish(Message):
+    def __init__(self):
+        pass
+
+
+class AKClear(Message):
+    def __init__(self):
+        pass
+
+
+class AKClearArea(Message):
+    def __init__(self):
+        pass
+
+
+class AKRescue(Message):
+    def __init__(self):
+        pass
+
+
+class AKLoad(Message):
+    def __init__(self):
+        pass
+
+
+class AKUnload(Message):
+    def __init__(self):
+        pass
+
+class AKSubscribe(Message):
+    def __init__(self):
+        pass
+
+
+class AKSay(Message):
+    def __init__(self):
+        pass
+
+
+class AKSpeak(Message):
+    def __init__(self):
+        pass

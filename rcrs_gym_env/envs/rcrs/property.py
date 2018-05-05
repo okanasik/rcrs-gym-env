@@ -47,8 +47,6 @@ class Property:
         pass
 
 
-
-
 class EntityIDProperty(Property):
     def __init__(self, urn):
         Property.__init__(self, urn)
@@ -61,6 +59,11 @@ class EntityIDProperty(Property):
 
     def __hash__(self):
         return self.value.get_value()
+
+    def copy(self):
+        new_entity_id_prop = EntityIDProperty(self.urn)
+        new_entity_id_prop.value = wm.EntityID(self.value.get_value())
+        return new_entity_id_prop
 
 
 class EntityIDListProperty(Property):
@@ -78,6 +81,13 @@ class EntityIDListProperty(Property):
         for i in range(count):
             e_id = wm.EntityID(et.read_int32(input_stream))
             self.value.append(e_id)
+
+    def copy(self):
+        new_entity_id_list_prop = EntityIDListProperty(self.urn)
+        new_entity_id_list_prop.value = []
+        for entity_id in self.value:
+            new_entity_id_list_prop.value.append(wm.EntityID(entity_id.get_value()))
+        return new_entity_id_list_prop
 
 
 # class DoubleProperty(Property):
@@ -108,6 +118,11 @@ class BooleanProperty(Property):
         elif tmp_value == 1:
             self.value = True
 
+    def copy(self):
+        new_boolean_prop = BooleanProperty(self.urn)
+        new_boolean_prop.value = self.value
+        return new_boolean_prop
+
 
 class IntProperty(Property):
     def __init__(self, urn):
@@ -118,6 +133,11 @@ class IntProperty(Property):
 
     def read(self, input_stream):
         self.value = et.read_int32(input_stream)
+
+    def copy(self):
+        new_int_prop = IntProperty(self.urn)
+        new_int_prop.value = self.value
+        return new_int_prop
 
 
 class IntArrayProperty(Property):
@@ -135,6 +155,13 @@ class IntArrayProperty(Property):
         for i in range(count):
             int_val = et.read_int32(input_stream)
             self.value.append(int_val)
+
+    def copy(self):
+        new_int_array_prop = IntArrayProperty(self.urn)
+        new_int_array_prop.value = []
+        for int_val in self.value:
+            new_int_array_prop.value.append(int_val)
+        return new_int_array_prop
 
 
 class EdgeListProperty(Property):
@@ -166,3 +193,12 @@ class EdgeListProperty(Property):
             if n_id != 0:
                 neighbor = wm.EntityID(n_id)
             self.value.append(wm.Edge(start_x, start_y, end_x, end_y, neighbor))
+
+    def copy(self):
+        new_edge_list_prop = EdgeListProperty(self.urn)
+        new_edge_list_prop.value = []
+        for edge in self.value:
+            new_edge_list_prop.append(wm.Edge(edge.get_start_x(), edge.get_start_y(),
+                                              edge.get_end_x(), edge.get_end_y(),
+                                              wm.EntityID(edge.get_neighbor().get_value())))
+        return new_edge_list_prop

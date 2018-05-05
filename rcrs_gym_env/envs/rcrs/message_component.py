@@ -6,12 +6,15 @@ from encoding_tool import write_entity
 from encoding_tool import read_entity
 from encoding_tool import write_float32
 from encoding_tool import read_float32
+from encoding_tool import read_msg
+from encoding_tool import write_msg
 
 
 from change_set import ChangeSet
 from world_model import Entity, EntityID
 # from command import Command
 from config import Config
+
 
 class IntComp:
     def __init__(self):
@@ -52,6 +55,7 @@ class StringComp:
     def __str__(self):
         return str(self.name) + " = " + str(self.value)
 
+
 class StringListComp:
     def __init__(self):
         self.value_list = None
@@ -78,18 +82,14 @@ class StringListComp:
 
 
 class ChangeSetComp:
-    changes = None
-    def __init__(self,n_changes=None):
-        if n_changes is None:
-            self.changes = ChangeSet()
-        else:
-            self.changes = ChangeSet(n_changes)
+    def __init__(self, _change_set=None):
+        self.changes = ChangeSet(_change_set)
             
     def get_change_set(self):
         return self.changes
     
-    def set_change_set(self, newChanges):
-        self.changes = ChangeSet(newChanges)
+    def set_change_set(self, new_change_set):
+        self.changes = ChangeSet(new_change_set)
     
     def write(self, output_stream):
         self.changes.write(output_stream)
@@ -99,8 +99,9 @@ class ChangeSetComp:
         self.changes.read(input_stream)
     
     def __str__(self):
-        return str(self.name) + " = " + str(len(self.changes.get_changed_entities())) + " entities."
-    
+        return " = " + str(len(self.changes.get_changed_entities())) + " entities."
+
+
 class EntityComp:
     entity = None
     
@@ -247,43 +248,35 @@ class IntListComp:
         return str(self.name) + " = " + str(self.ints)
 
     
-# class CommandListComp:
-#     commands = None
-#
-#     def __init__(self, lcommands=None):
-#         if not(lcommands is None) and isinstance(lcommands,list):
-#             self.commands = lcommands
-#         else:
-#             self.commands = []
-#
-#     def get_commands(self):
-#         return self.commands
-#
-#     def set_commands(self,lcommands):
-#         if not(lcommands is None) and isinstance(lcommands,list):
-#             self.commands = lcommands
-#         return
-#
-#     def write(self, output_stream):
-#         write_int32(len(self.commands), output_stream)
-#         for command in self.commands:
-#             write_msg(command,output_stream)
-#         return
-#
-#     def read(self,input_stream):
-#         self.commands.clear()
-#         count = read_int32(input_stream)
-#         for i in range(count):
-#             m = read_msg(input_stream)
-#             if isinstance(m,Command):
-#                 self.commands.append(m)
-#             else:
-#                 print "Command list stream contained a non-command message:", m, "(", type(m),")"
-#         return
-#
-#     def __str__(self):
-#         return str(len(self.commands)) + " commands."
-        
+class CommandListComp:
+    def __init__(self, _commands=None):
+        if _commands is not None:
+            self.commands = _commands
+        else:
+            self.commands = []
+
+    def get_commands(self):
+        return self.commands
+
+    def set_commands(self, _commands):
+        self.commands = _commands
+
+    def write(self, output_stream):
+        write_int32(len(self.commands), output_stream)
+        for command in self.commands:
+            write_msg(command, output_stream)
+
+    def read(self,input_stream):
+        self.commands = []
+        command_count = read_int32(input_stream)
+        for i in range(command_count):
+            command = read_msg(input_stream)
+            self.commands.append(command)
+
+    def __str__(self):
+        return str(len(self.commands)) + " commands."
+
+
 class FloatListComp:
     data = None
     def __init__(self, floats=None):
@@ -307,7 +300,7 @@ class FloatListComp:
         return
     
     def read(self,input_stream):
-        self.data.clear()
+        self.data = []
         count = read_int32(input_stream)
         for i in range(count):
             f = read_float32(input_stream)

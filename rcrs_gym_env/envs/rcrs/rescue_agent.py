@@ -2,6 +2,7 @@ from message import AKConnect
 from message import KAConnectOK
 from message import KAConnectError
 from message import AKAcknowledge
+from message import KASense
 from urn import *
 from world_model import WorldModel
 
@@ -34,7 +35,16 @@ class RescueAgent:
             self.handle_connect_ok(msg)
         elif isinstance(msg, KAConnectError):
             self.handle_connect_error(msg)
+        elif isinstance(msg, KASense):
+            self.process_sense(msg)
 
+    def process_sense(self, msg):
+        self.world_model.merge(msg.get_change_set())
+        heard = msg.get_hearing()
+        self.think(msg.get_time(), msg.get_change_set(), heard)
+
+    def think(self, timestep, change_set, heard):
+        print(str(timestep) + " thinking..")
 
     # that will be overriden by agents
     def get_requested_entities(self):
@@ -48,6 +58,7 @@ class RescueAgent:
         #todo: check whether we need to merge agent config and the config coming from kernel
         self.config = config
         print('post_connect agent_id:' + str(agent_id.get_value()))
+        print('config test comms.channels.count:' + self.config.get_value('comms.channels.count'))
 
     def handle_connect_ok(self, msg):
         if msg.request_id_comp.get_value() == self.connect_request_id:

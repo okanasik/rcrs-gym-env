@@ -59,12 +59,11 @@ def write_msg(msg, output_stream):
 
 def read_msg(input_stream):
     urn = read_str(input_stream)
-    if urn:
-        data_size = read_int32(input_stream)
-        if data_size > 0:
-            msg_data = input_stream.read(data_size)
-            msg = message_factory.create_msg(urn, msg_data)
-            return msg
+    data_size = read_int32(input_stream)
+    if data_size > 0:
+        msg_data = input_stream.read(data_size)
+        msg = message_factory.create_msg(urn, msg_data)
+        return msg
 
     return None
         

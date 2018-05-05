@@ -30,24 +30,28 @@ class WorldModel():
         for entity in _entities:
             self.entities[entity.get_id()] = entity
 
+    def merge(self, change_set):
+        #todo: update the world model with the changes in the change_set
+        pass
+
 
 class EntityID:
-    def __init__(self, n_id):
-        self.e_id = n_id
+    def __init__(self, _id):
+        self.id = _id
         
-    def equals(self, o):
-        if isinstance(o,EntityID):
-            return self.e_id == o.e_id
+    def __eq__(self, other):
+        if isinstance(other, EntityID):
+            return self.id == other.id
         return False
 
     def __hash__(self):
-        return self.e_id
+        return self.id
     
     def get_value(self):
-        return self.e_id
+        return self.id
     
     def to_string(self):
-        return str(self.e_id)
+        return str(self.id)
         
 
 class Edge():
