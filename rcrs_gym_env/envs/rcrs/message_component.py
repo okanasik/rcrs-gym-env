@@ -312,36 +312,25 @@ class FloatListComp:
     
         
 class RawDataComp:
-    byte_data = None
-    
-    def __init__(self, bdata=None):
-        if not(bdata is None) and isinstance(bdata,list):
-            self.byte_data = bdata
-        else:
-            self.byte_data = []
+    def __init__(self):
+        self.byte_data = None
             
     def get_data(self):
         return self.byte_data
     
-    def set_data(self,bdata):
-        if not(bdata is None) and isinstance(bdata,list):
-            self.byte_data = bdata
-        return
+    def set_data(self, byte_data_):
+        self.byte_data = byte_data_
     
-    def write(self,output_stream):
+    def write(self, output_stream):
         write_int32(len(self.byte_data), output_stream)
-        for b in self.byte_data:
-            output_stream.write(self.b) #CHECK WRITING OF BYTES
-        return
+        output_stream.write(self.byte_data)
     
     def read(self,input_stream):
         data_size = read_int32(input_stream)
         self.byte_data = input_stream.read(data_size)
-        return
 
 
 class ConfigComp:
-
     def __init__(self):
         self.config = None
 

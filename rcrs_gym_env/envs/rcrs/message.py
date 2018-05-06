@@ -7,6 +7,9 @@ from message_component import EntityListComp
 from message_component import ConfigComp
 from message_component import ChangeSetComp
 from message_component import CommandListComp
+from message_component import EntityIDListComp
+from message_component import IntListComp
+from message_component import RawDataComp
 
 msg_urns = {}
 
@@ -142,55 +145,113 @@ class KASense(Message):
 
 
 # command messages send by agents to the kernel
-class AKMove(Message):
+class Command(Message):
     def __init__(self):
-        pass
+        self.agent_id = EntityIDComp()
+        self.time = IntComp()
+        self.add_component(self.agent_id)
+        self.add_component(self.time)
 
 
-class AKRest(Message):
+class AKMove(Command):
+    urn = 'urn:rescuecore2.standard:message:move'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.path = EntityIDListComp()
+        self.x = IntComp()
+        self.y = IntComp()
+        self.add_component(self.path)
+        self.add_component(self.x)
+        self.add_component(self.y)
 
 
-class AKExtinguish(Message):
+class AKRest(Command):
+    urn = 'urn:rescuecore2.standard:message:rest'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
 
 
-class AKClear(Message):
+class AKExtinguish(Command):
+    urn = 'urn:rescuecore2.standard:message:extinguish'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.target = EntityIDComp()
+        self.water = IntComp()
+        self.add_component(self.target)
+        self.add_component(self.water)
 
 
-class AKClearArea(Message):
+class AKClear(Command):
+    urn = 'urn:rescuecore2.standard:message:clear'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.target = EntityIDComp()
+        self.add_component(self.target)
 
 
-class AKRescue(Message):
+class AKClearArea(Command):
+    urn = 'urn:rescuecore2.standard:message:clear_area'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.x = IntComp()
+        self.y = IntComp()
+        self.add_component(self.x)
+        self.add_component(self.y)
 
 
-class AKLoad(Message):
+class AKRescue(Command):
+    urn = 'urn:rescuecore2.standard:message:rescue'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.target = EntityIDComp()
+        self.add_component(self.target)
 
 
-class AKUnload(Message):
+class AKLoad(Command):
+    urn = 'urn:rescuecore2.standard:message:load'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.target = EntityIDComp()
+        self.add_component(self.target)
 
-class AKSubscribe(Message):
+
+class AKUnload(Command):
+    urn = 'urn:rescuecore2.standard:message:unload'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
 
+class AKSubscribe(Command):
+    urn = 'urn:rescuecore2.standard:message:subscribe'
 
-class AKSay(Message):
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.channels = IntListComp()
+        self.add_component(self.channels)
 
 
-class AKSpeak(Message):
+class AKSay(Command):
+    urn = 'urn:rescuecore2.standard:message:say'
+
     def __init__(self):
-        pass
+        Command.__init__(self)
+        self.data = RawDataComp()
+        self.add_component(self.data)
+
+
+class AKSpeak(Command):
+    urn = 'urn:rescuecore2.standard:message:speak'
+
+    def __init__(self):
+        Command.__init__(self)
+        self.channel = IntComp()
+        self.data = RawDataComp()
+        self.add_component(self.channel)
+        self.add_component(self.data)
