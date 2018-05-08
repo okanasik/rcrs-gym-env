@@ -9,7 +9,7 @@ This module mimics the function of the rescuecore2.worldmodel.ChangeSet class
 """
 
 import encoding_tool as et
-from world_model import Entity,EntityID
+import world_model as wm
 
 
 class ChangeSet:
@@ -21,9 +21,11 @@ class ChangeSet:
             self.merge(_change_set)
 
     def add_change(self, entity, property):
+        # print('add_change 1:' + str(type(entity.get_id())))
         self.add_change(entity.get_id(), entity.get_urn(), property)
 
     def add_change(self, entity_id, entity_urn, property):
+        # print('add_change 2:' + str(type(entity_id)))
         if entity_id in self.deleted:
             return
 
@@ -103,7 +105,7 @@ class ChangeSet:
         
         entity_count = et.read_int32(input_stream)
         for i in range(entity_count):
-            entity_id = EntityID(et.read_int32(input_stream))
+            entity_id = wm.EntityID(et.read_int32(input_stream))
             entity_urn = et.read_str(input_stream)
             property_count = et.read_int32(input_stream)
             for j in range(property_count):
@@ -113,7 +115,7 @@ class ChangeSet:
 
         deleted_count = et.read_int32(input_stream)
         for i in range(deleted_count):
-            entity_id = EntityID(et.read_int32(input_stream))
+            entity_id = wm.EntityID(et.read_int32(input_stream))
             self.entity_deleted(entity_id)
     
     def to_string(self):

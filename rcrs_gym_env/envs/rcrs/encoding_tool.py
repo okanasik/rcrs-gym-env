@@ -2,12 +2,7 @@ from data_stream import OutputStream, InputStream
 import message_factory
 import entity_factory
 import property_factory
-
-#import registry
-import world_model
-import struct
-
-#reg = registry.Registry()
+import world_model as wm
 
 
 def write_int32(value, output_stream):
@@ -71,6 +66,7 @@ def read_msg(input_stream):
 def read_boolean(input_stream):
     boolean_char = input_stream.read(1)
     b = ord(boolean_char)
+    # print('reading boolean char:' + boolean_char + ' ordvalue:' + str(b))
     return b == 1
 
 
@@ -91,6 +87,8 @@ def read_property(input_stream):
         size = read_int32(input_stream)
         property_byte_array = input_stream.read(size)
         result = property_factory.create_property(urn, property_byte_array)
+        result.set_defined(True)
+        # print('read the property')
     return result
         
 
@@ -108,11 +106,9 @@ def read_entity(input_stream):
     urn = read_str(input_stream)
     if urn == "" or urn is None:
         return None
-    eid = read_int32(input_stream)
+    eid = wm.EntityID(read_int32(input_stream))
     entity_size = read_int32(input_stream)
     entity = entity_factory.create_entity(eid, urn)
-    #byte_array_data = input_stream.read(entity_size)
-    #entity_input_stream = InputStream(byte_array_data)
     entity.read(input_stream)
     return entity
 

@@ -1,19 +1,7 @@
-from encoding_tool import write_int32
-from encoding_tool import read_int32
-from encoding_tool import write_str
-from encoding_tool import read_str
-from encoding_tool import write_entity
-from encoding_tool import read_entity
-from encoding_tool import write_float32
-from encoding_tool import read_float32
-from encoding_tool import read_msg
-from encoding_tool import write_msg
-
-
-from change_set import ChangeSet
-from world_model import Entity, EntityID
-# from command import Command
-from config import Config
+import encoding_tool as et
+import change_set as cs
+import world_model as wm
+import config as con
 
 
 class IntComp:
@@ -27,10 +15,10 @@ class IntComp:
         return self.value
 
     def write(self, output_stream):
-        write_int32(self.value, output_stream)
+        et.write_int32(self.value, output_stream)
 
     def read(self, input_stream):
-        self.value = read_int32(input_stream)
+        self.value = et.read_int32(input_stream)
         
     def __str__(self):
         return str(self.name) + " = " + str(self.value)
@@ -47,10 +35,10 @@ class StringComp:
         return self.value
 
     def write(self, output_stream):
-        write_str(self.value, output_stream)
+        et.write_str(self.value, output_stream)
 
     def read(self, input_stream):
-        self.value = read_str(input_stream)
+        self.value = et.read_str(input_stream)
 
     def __str__(self):
         return str(self.name) + " = " + str(self.value)
@@ -67,15 +55,15 @@ class StringListComp:
         return self.value_list
 
     def write(self, output_stream):
-        write_int32(len(self.value_list), output_stream)
+        et.write_int32(len(self.value_list), output_stream)
         for value in self.value_list:
-            write_str(value, output_stream)
+            et.write_str(value, output_stream)
 
     def read(self, input_stream):
         self.value_list = []
-        list_len = read_int32(input_stream)
+        list_len = et.read_int32(input_stream)
         for i in range(list_len):
-            self.value_list.append(read_str(input_stream))
+            self.value_list.append(et.read_str(input_stream))
 
     def __str__(self):
         return str(self.name) + " = " + str(self.value_list)
@@ -83,19 +71,19 @@ class StringListComp:
 
 class ChangeSetComp:
     def __init__(self, _change_set=None):
-        self.changes = ChangeSet(_change_set)
+        self.changes = cs.ChangeSet(_change_set)
             
     def get_change_set(self):
         return self.changes
     
     def set_change_set(self, new_change_set):
-        self.changes = ChangeSet(new_change_set)
+        self.changes = cs.ChangeSet(new_change_set)
     
     def write(self, output_stream):
         self.changes.write(output_stream)
         
     def read(self, input_stream):
-        self.changes = ChangeSet()
+        self.changes = cs.ChangeSet()
         self.changes.read(input_stream)
     
     def __str__(self):
@@ -106,7 +94,7 @@ class EntityComp:
     entity = None
     
     def __init__(self,n_entity=None):
-        if isinstance(n_entity,Entity):
+        if isinstance(n_entity, wm.Entity):
             self.entity = n_entity
         else:
             self.entity = None
@@ -115,14 +103,14 @@ class EntityComp:
         return self.entity
     
     def set_entity(self, e):
-        if isinstance(e,Entity):
+        if isinstance(e, wm.Entity):
             self.entity = e
             
     def write(self, output_string):
-        write_entity(self.entity,output_string)
+        et.write_entity(self.entity, output_string)
         
     def read(self, input_string):
-        self.entity = read_entity(input_string)
+        self.entity = et.read_entity(input_string)
 
     def __str__(self):
         return str(self.name) + " = " + str(self.entity)
@@ -139,18 +127,16 @@ class EntityIDComp:
         self.value = eid
     
     def write(self, output_stream):
-        write_int32(self.value.get_value(),output_stream)
+        et.write_int32(self.value.get_value(),output_stream)
         
     def read(self,input_stream):
-        self.value = EntityID(read_int32(input_stream))
+        self.value = wm.EntityID(et.read_int32(input_stream))
 
     def __str__(self):
         return str(self.name) + " = " + str(self.value)
 
 
 class EntityIDListComp:
-    ids = None
-    
     def __init__(self,nids=None):
         if not (nids is None) and isinstance(nids,list):
             self.ids = nids
@@ -166,16 +152,16 @@ class EntityIDListComp:
         return
     
     def write(self,output_stream):
-        write_int32(len(self.ids), output_stream)
+        et.write_int32(len(self.ids), output_stream)
         for eid in self.ids:
-            write_int32(eid.getValue(),output_stream)
+            et.write_int32(eid.get_value(), output_stream)
         return
     
     def read(self,input_stream):
         self.ids = []
-        count = read_int32(input_stream)
+        count = et.read_int32(input_stream)
         for i in range(count):
-            eid = EntityID(read_int32(input_stream))
+            eid = wm.EntityID(et.read_int32(input_stream))
             self.ids.append(eid)
         return
 
@@ -198,15 +184,15 @@ class EntityListComp:
             self.ents = nents
     
     def write(self, output_stream):
-        write_int32(len(self.ents), output_stream)
+        et.write_int32(len(self.ents), output_stream)
         for ent in self.ents:
-            write_entity(ent, output_stream)
+            et.write_entity(ent, output_stream)
     
     def read(self,input_stream):
         self.ents = []
-        count = read_int32(input_stream)
+        count = et.read_int32(input_stream)
         for i in range(count):
-            e = read_entity(input_stream)
+            e = et.read_entity(input_stream)
             self.ents.append(e)
     
     def __str__(self):
@@ -214,8 +200,6 @@ class EntityListComp:
         
     
 class IntListComp:
-    ints = None
-    
     def __init__(self,nints=None):
         if not (nints is None) and isinstance(nints,list):
             self.ints = nints
@@ -231,16 +215,16 @@ class IntListComp:
         return
     
     def write(self,output_stream):
-        write_int32(len(self.ints), output_stream)
+        et.write_int32(len(self.ints), output_stream)
         for nt in self.ints:
-            write_int32(nt,output_stream)
+            et.write_int32(nt,output_stream)
         return
     
     def read(self,input_stream):
         self.ints = []
-        count = read_int32(input_stream)
+        count = et.read_int32(input_stream)
         for i in range(count):
-            e = read_int32(input_stream)
+            e = et.read_int32(input_stream)
             self.ints.append(e)
         return
 
@@ -262,15 +246,15 @@ class CommandListComp:
         self.commands = _commands
 
     def write(self, output_stream):
-        write_int32(len(self.commands), output_stream)
+        et.write_int32(len(self.commands), output_stream)
         for command in self.commands:
-            write_msg(command, output_stream)
+            et.write_msg(command, output_stream)
 
     def read(self,input_stream):
         self.commands = []
-        command_count = read_int32(input_stream)
+        command_count = et.read_int32(input_stream)
         for i in range(command_count):
-            command = read_msg(input_stream)
+            command = et.read_msg(input_stream)
             self.commands.append(command)
 
     def __str__(self):
@@ -278,7 +262,6 @@ class CommandListComp:
 
 
 class FloatListComp:
-    data = None
     def __init__(self, floats=None):
         if not(floats is None) and isinstance(floats,list):
             self.data = floats
@@ -294,16 +277,16 @@ class FloatListComp:
         return
     
     def write(self,output_stream):
-        write_int32(len(self.data), output_stream)
+        et.write_int32(len(self.data), output_stream)
         for f in self.data:
-            write_float32(f,output_stream)
+            et.write_float32(f,output_stream)
         return
     
     def read(self,input_stream):
         self.data = []
-        count = read_int32(input_stream)
+        count = et.read_int32(input_stream)
         for i in range(count):
-            f = read_float32(input_stream)
+            f = et.read_float32(input_stream)
             self.data.append(f)
         return
         
@@ -322,11 +305,11 @@ class RawDataComp:
         self.byte_data = byte_data_
     
     def write(self, output_stream):
-        write_int32(len(self.byte_data), output_stream)
+        et.write_int32(len(self.byte_data), output_stream)
         output_stream.write(self.byte_data)
     
     def read(self,input_stream):
-        data_size = read_int32(input_stream)
+        data_size = et.read_int32(input_stream)
         self.byte_data = input_stream.read(data_size)
 
 
@@ -342,18 +325,18 @@ class ConfigComp:
 
     def write(self, output_stream):
         keys = self.config.get_keys()
-        write_int32(len(keys), output_stream)
+        et.write_int32(len(keys), output_stream)
         for key in keys:
             value = self.config.get_value(key)
-            write_str(key, output_stream)
-            write_str(value, output_stream)
+            et.write_str(key, output_stream)
+            et.write_str(value, output_stream)
 
     def read(self, input_stream):
-        key_count = read_int32(input_stream)
-        self.config = Config()
+        key_count = et.read_int32(input_stream)
+        self.config = con.Config()
         for i in range(key_count):
-            key = read_str(input_stream)
-            value = read_str(input_stream)
+            key = et.read_str(input_stream)
+            value = et.read_str(input_stream)
             self.config.set_value(key, value)
 
     def __str__(self):

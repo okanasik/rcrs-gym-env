@@ -147,6 +147,7 @@ class KASense(Message):
 # command messages send by agents to the kernel
 class Command(Message):
     def __init__(self):
+        Message.__init__(self)
         self.agent_id = EntityIDComp()
         self.time = IntComp()
         self.add_component(self.agent_id)
@@ -164,6 +165,8 @@ class AKMove(Command):
         self.add_component(self.path)
         self.add_component(self.x)
         self.add_component(self.y)
+        self.x.set_value(-1)
+        self.y.set_value(-1)
 
 
 class AKRest(Command):

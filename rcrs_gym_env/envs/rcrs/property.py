@@ -2,6 +2,7 @@ from urn import *
 import encoding_tool as et
 import world_model as wm
 
+
 class Property:
     # Interface for the properties that make up an entity
     def __init__(self, urn_):
@@ -24,7 +25,7 @@ class Property:
 
     # this method is going to be overriden
     def get_value(self):
-        self.value
+        return self.value
 
     # this method is going to be overriden
     def write(self, out):
@@ -56,6 +57,7 @@ class EntityIDProperty(Property):
 
     def read(self, input_stream):
         self.value = wm.EntityID(et.read_int32(input_stream))
+        # print('read entityid value:' + str(self.value.get_value()))
 
     def __hash__(self):
         return self.value.get_value()
@@ -133,6 +135,7 @@ class IntProperty(Property):
 
     def read(self, input_stream):
         self.value = et.read_int32(input_stream)
+        # print('read int value:' + str(self.value))
 
     def copy(self):
         new_int_prop = IntProperty(self.urn)

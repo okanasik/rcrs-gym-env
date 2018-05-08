@@ -5,6 +5,7 @@ from rescue_agent import AmbulanceTeamAgent
 from tcp_connection import TCPConnection
 import sys
 import time
+import world_model as wm
 
 
 class AgentLauncher:

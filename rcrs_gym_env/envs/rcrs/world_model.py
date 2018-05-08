@@ -11,16 +11,11 @@ rescuecore2.worldmodel.EntityID
 rescuecore2.worldmodel.Property
 
 """
-
-from urn import *
-from property import IntProperty
-from property import IntArrayProperty
-from property import EntityIDProperty
-from property import EdgeListProperty
-from property import EntityIDListProperty
-
+import urn
+import property as p
 import encoding_tool as et
 import entity_factory as ef
+import world_model as wm
 from rtree import index
 import sys
 
@@ -36,15 +31,18 @@ class WorldModel():
         self.maxx = None
         self.maxy = None
 
-
     def add_entities(self, _entities):
         for entity in _entities:
             self.entities[entity.get_id()] = entity
 
     def get_entity(self, entity_id):
-        if self.entities.has_key(entity_id):
+        # print('get_entity 3:' + str(type(entity_id)))
+        # for entity_id_ in self.entities:
+        #     print(str(entity_id_.get_value()))
+        if entity_id in self.entities:
             return self.entities.get(entity_id)
         else:
+            # print('not found entity_id:' + str(entity_id.get_value()))
             return None
 
     def add_entity(self, entity):
@@ -136,18 +134,8 @@ class WorldModel():
             y2 = max(y2, apexes[i+1])
         return x1, y1, x2, y2
 
-
-
-
-
-
-
-
-
-
-
-
-
+    def get_entities(self):
+        return self.entities.values()
 
 
 class EntityID:
@@ -165,7 +153,7 @@ class EntityID:
     def get_value(self):
         return self.id
     
-    def to_string(self):
+    def __str__(self):
         return str(self.id)
         
 
@@ -234,6 +222,7 @@ class Entity:
         count = et.read_int32(inp)
         for i in range(count):
             p = et.read_property(inp)
+            # print('property value:' + str(p.get_value()))
             if p is not None:
                 existing = self.get_property(p.get_urn())
                 existing.take_value(p)
@@ -249,25 +238,25 @@ class Entity:
 
 
 class World(Entity):
-    urn = world_urn
+    urn = urn.world_urn
 
     def __init__(self, entity_id):
         Entity.__init__(self, entity_id)
-        self.start_time = IntProperty(start_time_urn)
-        self.longitude = IntProperty(longitude_urn)
-        self.latitude = IntProperty(latitude_urn)
-        self.wind_force = IntProperty(wind_force_urn)
-        self.wind_direction = IntProperty(wind_direction_urn)
+        self.start_time = p.IntProperty(urn.start_time_urn)
+        self.longitude = p.IntProperty(urn.longitude_urn)
+        self.latitude = p.IntProperty(urn.latitude_urn)
+        self.wind_force = p.IntProperty(urn.wind_force_urn)
+        self.wind_direction = p.IntProperty(urn.wind_direction_urn)
         self.register_properties([self.start_time, self.longitude, self.latitude, self.wind_force, self.wind_direction])
 
 
 class Area(Entity):
     def __init__(self, entity_id):
         Entity.__init__(self, entity_id)
-        self.x = IntProperty(x_urn)
-        self.y = IntProperty(y_urn)
-        self.edges = EdgeListProperty(edges_urn)
-        self.blockades = EntityIDListProperty(blockades_urn)
+        self.x = p.IntProperty(urn.x_urn)
+        self.y = p.IntProperty(urn.y_urn)
+        self.edges = p.EdgeListProperty(urn.edges_urn)
+        self.blockades = p.EntityIDListProperty(urn.blockades_urn)
         self.register_properties([self.x, self.y, self.edges, self.blockades])
         self.apexes = None
 
@@ -291,41 +280,48 @@ class Area(Entity):
 
 
 class Building(Area):
-    urn = building_urn
+    urn = urn.building_urn
 
     def __init__(self, entity_id):
         Area.__init__(self, entity_id)
-        self.floors = IntProperty(floors_urn)
-        self.ignition = IntProperty(ignition_urn)
-        self.fieryness = IntProperty(fieryness_urn)
-        self.brokenness = IntProperty(brokenness_urn)
-        self.building_code = IntProperty(building_code_urn)
-        self.attributes = IntProperty(building_attributes_urn)
-        self.ground_area = IntProperty(ground_area_urn)
-        self.total_area = IntProperty(total_area_urn)
-        self.temperature = IntProperty(temperature_urn)
-        self.importance = IntProperty(importance_urn)
+        self.floors = p.IntProperty(urn.floors_urn)
+        self.ignition = p.IntProperty(urn.ignition_urn)
+        self.fieryness = p.IntProperty(urn.fieryness_urn)
+        self.brokenness = p.IntProperty(urn.brokenness_urn)
+        self.building_code = p.IntProperty(urn.building_code_urn)
+        self.attributes = p.IntProperty(urn.building_attributes_urn)
+        self.ground_area = p.IntProperty(urn.ground_area_urn)
+        self.total_area = p.IntProperty(urn.total_area_urn)
+        self.temperature = p.IntProperty(urn.temperature_urn)
+        self.importance = p.IntProperty(urn.importance_urn)
         self.register_properties([self.floors, self.ignition, self.fieryness, self.brokenness, self.building_code])
         self.register_properties([self.attributes, self.ground_area, self.total_area, self.temperature, self.importance])
 
+    def is_on_fire(self):
+        fieryness_value = self.fieryness.get_value()
+        # HEATING:1 BURNING:2 INFERNO:3
+        if fieryness_value == 1 or fieryness_value == 2 or fieryness_value == 3:
+            return True
+        return False
+
 
 class Road(Area):
-    urn = road_urn
+    urn = urn.road_urn
 
     def __init__(self, entity_id):
         Area.__init__(self, entity_id)
 
 
 class Blockade(Entity):
-    urn = blockade_urn
+    urn = urn.blockade_urn
 
     def __init__(self, entity_id):
         Entity.__init__(self, entity_id)
-        self.x = IntProperty(x_urn)
-        self.y = IntProperty(y_urn)
-        self.position = EntityIDProperty(position_urn)
-        self.apexes = IntArrayProperty(apexes_urn)
-        self.repair_cost = IntProperty(repair_cost_urn)
+        self.x = p.IntProperty(urn.x_urn)
+        self.y = p.IntProperty(urn.y_urn)
+        self.position = p.EntityIDProperty(urn.position_urn)
+        self.apexes = p.IntArrayProperty(urn.apexes_urn)
+        self.repair_cost = p.IntProperty(urn.repair_cost_urn)
         self.register_properties([self.x, self.y, self.position, self.apexes, self.repair_cost])
 
     def get_apexes(self):
@@ -340,42 +336,42 @@ class Blockade(Entity):
 
 
 class Refuge(Building):
-    urn = refuge_urn
+    urn = urn.refuge_urn
 
     def __init__(self, entity_id):
         Building.__init__(self, entity_id)
 
 
 class Hydrant(Road):
-    urn = hydrant_urn
+    urn = urn.hydrant_urn
 
     def __init__(self, entity_id):
         Road.__init__(self, entity_id)
 
 
 class GasStation(Building):
-    urn = gas_station_urn
+    urn = urn.gas_station_urn
 
     def __init__(self, entity_id):
         Building.__init__(self, entity_id)
 
 
 class FireStationEntity(Building):
-    urn = fire_station_urn
+    urn = urn.fire_station_urn
 
     def __init__(self, entity_id):
         Building.__init__(self, entity_id)
 
 
 class AmbulanceCentreEntity(Building):
-    urn = ambulance_centre_urn
+    urn = urn.ambulance_centre_urn
 
     def __init__(self, entity_id):
         Building.__init__(self, entity_id)
 
 
 class PoliceOfficeEntity(Building):
-    urn = police_office_urn
+    urn = urn.police_office_urn
 
     def __init__(self, entity_id):
         Building.__init__(self, entity_id)
@@ -384,16 +380,16 @@ class PoliceOfficeEntity(Building):
 class Human(Entity):
     def __init__(self, entity_id):
         Entity.__init__(self, entity_id)
-        self.x = IntProperty(x_urn)
-        self.y = IntProperty(y_urn)
-        self.travel_distance = IntProperty(travel_distance_urn)
-        self.position = EntityIDProperty(position_urn)
-        self.position_history = IntArrayProperty(position_history_urn)
-        self.direction = IntProperty(direction_urn)
-        self.stamina = IntProperty(stamina_urn)
-        self.hp = IntProperty(hp_urn)
-        self.damage = IntProperty(damage_urn)
-        self.buriedness = IntProperty(buriedness_urn)
+        self.x = p.IntProperty(urn.x_urn)
+        self.y = p.IntProperty(urn.y_urn)
+        self.travel_distance = p.IntProperty(urn.travel_distance_urn)
+        self.position = p.EntityIDProperty(urn.position_urn)
+        self.position_history = p.IntArrayProperty(urn.position_history_urn)
+        self.direction = p.IntProperty(urn.direction_urn)
+        self.stamina = p.IntProperty(urn.stamina_urn)
+        self.hp = p.IntProperty(urn.hp_urn)
+        self.damage = p.IntProperty(urn.damage_urn)
+        self.buriedness = p.IntProperty(urn.buriedness_urn)
         self.register_properties([self.x, self.y, self.travel_distance, self.position, self.position_history])
         self.register_properties([self.direction, self.stamina, self.hp, self.damage, self.buriedness])
 
@@ -408,32 +404,52 @@ class Human(Entity):
             return pos_entity.get_location(world_model)
         return None, None
 
+    def __str__(self):
+        return str(self.position.get_value())
+
 
 class Civilian(Human):
-    urn = civilian_urn
+    urn = urn.civilian_urn
 
     def __init__(self, entity_id):
         Human.__init__(self, entity_id)
 
 
 class FireBrigadeEntity(Human):
-    urn = fire_brigade_urn
+    urn = urn.fire_brigade_urn
 
     def __init__(self, entity_id):
         Human.__init__(self, entity_id)
-        self.water = IntProperty(water_urn)
+        self.water = p.IntProperty(urn.water_urn)
         self.register_properties([self.water])
 
 
 class AmbulanceTeamEntity(Human):
-    urn = ambulance_team_urn
+    urn = urn.ambulance_team_urn
 
     def __init__(self, entity_id):
         Human.__init__(self, entity_id)
 
 
 class PoliceForceEntity(Human):
-    urn = police_force_urn
+    urn = urn.police_force_urn
 
     def __init__(self, entity_id):
         Human.__init__(self, entity_id)
+
+
+if __name__ == '__main__':
+    id1 = wm.EntityID(10)
+    id2 = wm.EntityID(20)
+    id3 = wm.EntityID(10)
+    id4 = wm.EntityID(10)
+    my_dict = {}
+    my_dict[id1] = id1
+    my_dict[id2] = id2
+
+    print('id1:' + str(id1) + ' id2:' + str(id2) + ' id3:' + str(id3))
+    print('id3 from dict:' + str(my_dict[id4]))
+
+    for my_key in my_dict:
+        print(str(type(my_key.get_value())))
+
